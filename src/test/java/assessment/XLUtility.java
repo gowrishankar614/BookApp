@@ -1,4 +1,5 @@
 package assessment;
+
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.openqa.selenium.By;
@@ -20,7 +21,7 @@ public class XLUtility {
 		this.filePath = filePath;
 		FileInputStream fis = new FileInputStream(filePath);
 		this.workbook = new XSSFWorkbook(fis);
-		int sheetIndex=0;
+		int sheetIndex = 0;
 		this.sheet = workbook.getSheetAt(sheetIndex);
 	}
 
@@ -51,26 +52,32 @@ public class XLUtility {
 
 	public void createSheet(String sheetName) {
 		// Check if the sheet already exists
-        if (workbook.getSheet(sheetName) == null) {
-            workbook.createSheet(sheetName);
-        }
+		if (workbook.getSheet(sheetName) == null) {
+			workbook.createSheet(sheetName);
+		}
 	}
-	
-	public void writeDataToNewSheet(String sheetName, String[][] data) throws IOException {
-        Sheet sheet = workbook.createSheet(sheetName);
-        
-        for (int i = 0; i < data.length; i++) {
-            Row row = sheet.createRow(i);
-            for (int j = 0; j < data[i].length; j++) {
-                Cell cell = row.createCell(j);
-                cell.setCellValue(data[i][j]);
-            }
-        }
 
-        try (FileOutputStream fos = new FileOutputStream(filePath)) {
-            workbook.write(fos);
-        }
-    }
+	public void writeDataToNewSheet(String sheetName, String[][] data) throws IOException {
+		// Remove sheet if it already exists
+		int existingSheetIndex = workbook.getSheetIndex(sheetName);
+		if (existingSheetIndex != -1) {
+			workbook.removeSheetAt(existingSheetIndex);
+		}
+
+		Sheet sheet = workbook.createSheet(sheetName);
+
+		for (int i = 0; i < data.length; i++) {
+			Row row = sheet.createRow(i);
+			for (int j = 0; j < data[i].length; j++) {
+				Cell cell = row.createCell(j);
+				cell.setCellValue(data[i][j]);
+			}
+		}
+
+		try (FileOutputStream fos = new FileOutputStream(filePath)) {
+			workbook.write(fos);
+		}
+	}
 
 	public void save() {
 		try (FileOutputStream outputStream = new FileOutputStream(filePath)) {
