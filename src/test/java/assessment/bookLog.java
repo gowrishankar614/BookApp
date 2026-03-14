@@ -69,9 +69,9 @@ public class bookLog extends ExtentReport {
 			driver.findElement(By.xpath("//span[@id='see-book-Programming JavaScript Applications']")).click();
 			// Log result
 			test.pass("Test One passed");
-		} catch (Exception e) {
-			test.fail("An unexpected error occurred: " + e.getMessage());
-			Assert.fail("Test Three failed due to an unexpected error");
+		} catch(Exception e){
+		    e.printStackTrace();
+		    Assert.fail("Test failed: " + e.getMessage());
 		}
 
 	}
@@ -133,9 +133,9 @@ public class bookLog extends ExtentReport {
 		} catch (IOException e) {
 			test.fail("IO Exception occurred: " + e.getMessage());
 			Assert.fail("Test Three failed due to IO Exception");
-		} catch (Exception e) {
-			test.fail("An unexpected error occurred: " + e.getMessage());
-			Assert.fail("Test Three failed due to an unexpected error");
+		} catch(Exception e){
+		    e.printStackTrace();
+		    Assert.fail("Test failed: " + e.getMessage());
 		}
 	}
 
@@ -182,9 +182,9 @@ public class bookLog extends ExtentReport {
 		} catch (IOException e) {
 			test.fail("IO Exception occurred: " + e.getMessage());
 			Assert.fail("Test Three failed due to IO Exception");
-		} catch (Exception e) {
-			test.fail("An unexpected error occurred: " + e.getMessage());
-			Assert.fail("Test Three failed due to an unexpected error");
+		} catch(Exception e){
+		    e.printStackTrace();
+		    Assert.fail("Test failed: " + e.getMessage());
 		}
 
 	}
@@ -224,9 +224,9 @@ public class bookLog extends ExtentReport {
 			actions.dragAndDrop(numbers.get(5), numbers.get(4)).perform(); // Two to One
 
 			test.pass("Test Four passed");
-		} catch (Exception e) {
-			test.fail("An unexpected error occurred: " + e.getMessage());
-			Assert.fail("Test Four failed due to an unexpected error");
+		} catch(Exception e){
+		    e.printStackTrace();
+		    Assert.fail("Test failed: " + e.getMessage());
 		}
 
 	}
