@@ -30,7 +30,6 @@ public class bookLog extends ExtentReport {
 
 	private WebDriver driver;
 	private WebDriverWait wait;
-	
 
 	String BASE_URL = "https://demoqa.com/books";
 	String SEARCH_TERM = "JavaScript";
@@ -45,12 +44,16 @@ public class bookLog extends ExtentReport {
 	@Test(priority = 1)
 	public void bookSearch() {
 		test = extent.createTest("Test One", "Book Search using keyword");
-        WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
+		WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
 
 		try {
 
 			driver.get(BASE_URL);
-			driver.findElement(By.xpath("//input[@id='searchBox']")).sendKeys(SEARCH_TERM);
+			// driver.findElement(By.xpath("//input[@id='searchBox']")).sendKeys(SEARCH_TERM);
+			WebElement searchBox = wait
+					.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//input[@id='searchBox']")));
+
+			searchBox.sendKeys("Book");
 
 			// Validate the product name and author
 			WebElement bookNameElement = driver.findElement(By.id("see-book-Programming JavaScript Applications"));
@@ -69,9 +72,9 @@ public class bookLog extends ExtentReport {
 			driver.findElement(By.xpath("//span[@id='see-book-Programming JavaScript Applications']")).click();
 			// Log result
 			test.pass("Test One passed");
-		} catch(Exception e){
-		    e.printStackTrace();
-		    Assert.fail("Test failed: " + e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail("Test failed: " + e.getMessage());
 		}
 
 	}
@@ -79,7 +82,7 @@ public class bookLog extends ExtentReport {
 	@Test(priority = 2)
 	public void studentForm() throws IOException {
 		test = extent.createTest("Test Two", "Fill up the form for 5 studends");
-        WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
+		WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
 
 		try {
 			driver.get(BASE_URL);
@@ -114,7 +117,12 @@ public class bookLog extends ExtentReport {
 				js.executeScript("window.scrollBy(0,500)", "");
 
 				// Submit the form
-				driver.findElement(By.cssSelector("#submit")).click();
+				// driver.findElement(By.cssSelector("#submit")).click();
+				WebElement submit = wait.until(ExpectedConditions.elementToBeClickable(By.id("submit")));
+
+				((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", submit);
+
+				submit.click();
 
 				// Wait for submission to process
 				driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(2));
@@ -133,17 +141,16 @@ public class bookLog extends ExtentReport {
 		} catch (IOException e) {
 			test.fail("IO Exception occurred: " + e.getMessage());
 			Assert.fail("Test Three failed due to IO Exception");
-		} catch(Exception e){
-		    e.printStackTrace();
-		    Assert.fail("Test failed: " + e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail("Test failed: " + e.getMessage());
 		}
 	}
 
 	@Test(priority = 3)
 	public void WebTableToExcel() throws InterruptedException, IOException {
 		test = extent.createTest("Test Three", "Write the webtable data to excel");
-        WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
-
+		WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
 
 		try {
 			// Navigate to the web page
@@ -155,7 +162,10 @@ public class bookLog extends ExtentReport {
 			driver.findElement(By.xpath("(//li[@id='item-3'])[1]")).click();
 			JavascriptExecutor js = (JavascriptExecutor) driver;
 			js.executeScript("window.scrollBy(0,300)", "");
-			WebElement table = driver.findElement(By.xpath("//div[@class='ReactTable -striped -highlight']"));
+			// WebElement table = driver.findElement(By.xpath("//div[@class='ReactTable
+			// -striped -highlight']"));
+			WebElement table = wait.until(
+					ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[contains(@class,'ReactTable')]")));
 
 			// Prepare data to write to Excel
 			int rowCount = 0;
@@ -182,9 +192,9 @@ public class bookLog extends ExtentReport {
 		} catch (IOException e) {
 			test.fail("IO Exception occurred: " + e.getMessage());
 			Assert.fail("Test Three failed due to IO Exception");
-		} catch(Exception e){
-		    e.printStackTrace();
-		    Assert.fail("Test failed: " + e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail("Test failed: " + e.getMessage());
 		}
 
 	}
@@ -192,8 +202,7 @@ public class bookLog extends ExtentReport {
 	@Test(priority = 4)
 	public void DragAndDropExample() throws InterruptedException {
 		test = extent.createTest("Test Four", "Sort the List");
-        WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
-
+		WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
 
 		try {
 			// Navigate to the web page
@@ -209,7 +218,12 @@ public class bookLog extends ExtentReport {
 			Thread.sleep(3000);
 
 			// Find the list of elements
-			List<WebElement> numbers = driver.findElements(By.cssSelector(".vertical-list-container .list-group-item"));
+			//List<WebElement> numbers = driver.findElements(By.cssSelector(".vertical-list-container .list-group-item"));
+			List<WebElement> numbers = wait.until(
+			        ExpectedConditions.visibilityOfAllElementsLocatedBy(
+			                By.cssSelector(".vertical-list-container .list-group-item")
+			        )
+			);
 			// System.out.println("The length is " + numbers.size());
 
 			// Initialize the Actions class
@@ -224,9 +238,9 @@ public class bookLog extends ExtentReport {
 			actions.dragAndDrop(numbers.get(5), numbers.get(4)).perform(); // Two to One
 
 			test.pass("Test Four passed");
-		} catch(Exception e){
-		    e.printStackTrace();
-		    Assert.fail("Test failed: " + e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail("Test failed: " + e.getMessage());
 		}
 
 	}
