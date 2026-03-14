@@ -38,14 +38,15 @@ public class bookLog extends ExtentReport {
 
 	@BeforeMethod
 	public void setUp() {
-		DriverManager.setupDriver();
-		wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+	    DriverManager.setupDriver();
+	    driver = DriverManager.getDriver();   // IMPORTANT
+	    wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 	}
 
 	@Test(priority = 1)
 	public void bookSearch() {
 		test = extent.createTest("Test One", "Book Search using keyword");
-		WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
+		//WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
 
 		try {
 
@@ -83,7 +84,7 @@ public class bookLog extends ExtentReport {
 	@Test(priority = 2)
 	public void studentForm() throws IOException {
 		test = extent.createTest("Test Two", "Fill up the form for 5 studends");
-		WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
+		//WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
 
 		try {
 			driver.get(BASE_URL);
@@ -157,7 +158,7 @@ public class bookLog extends ExtentReport {
 	@Test(priority = 3)
 	public void WebTableToExcel() throws InterruptedException, IOException {
 		test = extent.createTest("Test Three", "Write the webtable data to excel");
-		WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
+		//WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
 
 		try {
 			// Navigate to the web page
@@ -209,7 +210,7 @@ public class bookLog extends ExtentReport {
 	@Test(priority = 4)
 	public void DragAndDropExample() throws InterruptedException {
 		test = extent.createTest("Test Four", "Sort the List");
-		WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
+		//WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
 
 		try {
 			// Navigate to the web page
@@ -253,6 +254,8 @@ public class bookLog extends ExtentReport {
 
 	@AfterMethod
 	public void tearDown() {
-		DriverManager.quitDriver();
+	    if (DriverManager.getDriver() != null) {
+	        DriverManager.quitDriver();
+	    }
 	}
 }
