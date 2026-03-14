@@ -39,6 +39,7 @@ public class bookLog extends ExtentReport {
 	@BeforeMethod
 	public void setUp() {
 		DriverManager.setupDriver();
+		wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 	}
 
 	@Test(priority = 1)
@@ -87,7 +88,13 @@ public class bookLog extends ExtentReport {
 		try {
 			driver.get(BASE_URL);
 			driver.findElement(By.xpath("(//div[contains(@class,'header-wrapper')])[2]")).click();
-			driver.findElement(By.xpath("(//li[@id='item-0'])[2]")).click();
+			// driver.findElement(By.xpath("(//li[@id='item-0'])[2]")).click();
+			WebElement element = wait
+					.until(ExpectedConditions.elementToBeClickable(By.xpath("(//li[@id='item-0'])[2]")));
+
+			((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", element);
+
+			element.click();
 
 			// Initialize Excel utility
 			XLUtility excelUtils = new XLUtility("src/resources/data.xlsx");
@@ -218,12 +225,11 @@ public class bookLog extends ExtentReport {
 			Thread.sleep(3000);
 
 			// Find the list of elements
-			//List<WebElement> numbers = driver.findElements(By.cssSelector(".vertical-list-container .list-group-item"));
-			List<WebElement> numbers = wait.until(
-			        ExpectedConditions.visibilityOfAllElementsLocatedBy(
-			                By.cssSelector(".vertical-list-container .list-group-item")
-			        )
-			);
+			// List<WebElement> numbers =
+			// driver.findElements(By.cssSelector(".vertical-list-container
+			// .list-group-item"));
+			List<WebElement> numbers = wait.until(ExpectedConditions
+					.visibilityOfAllElementsLocatedBy(By.cssSelector(".vertical-list-container .list-group-item")));
 			// System.out.println("The length is " + numbers.size());
 
 			// Initialize the Actions class
