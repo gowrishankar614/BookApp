@@ -43,10 +43,13 @@ public class bookLog extends BaseTest {
 					.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//input[@id='searchBox']")));
 
 			searchBox.sendKeys(SEARCH_TERM);
+			
+			// Wait for search results to load
+			Thread.sleep(2000);
 
-			// Validate the product name and author
-			WebElement bookNameElement = driver.findElement(By.id("see-book-Programming JavaScript Applications"));
-			WebElement authorElement = driver.findElement(By.xpath("//div[normalize-space()='Eric Elliott']"));
+			// Validate the product name and author - wait for elements to be visible
+			WebElement bookNameElement = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("see-book-Programming JavaScript Applications")));
+			WebElement authorElement = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[normalize-space()='Eric Elliott']")));
 
 			String bookName = bookNameElement.getText();
 			String author = authorElement.getText();
@@ -58,7 +61,8 @@ public class bookLog extends BaseTest {
 			JavascriptExecutor js = (JavascriptExecutor) driver;
 			js.executeScript("window.scrollBy(0,250)", "");
 
-			driver.findElement(By.xpath("//span[@id='see-book-Programming JavaScript Applications']")).click();
+			WebElement bookLink = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[@id='see-book-Programming JavaScript Applications']")));
+			bookLink.click();
 			// Log result
 			test.pass("Test One passed");
 		} catch (Exception e) {
@@ -111,13 +115,14 @@ public class bookLog extends BaseTest {
 				JavascriptExecutor js = (JavascriptExecutor) driver;
 				js.executeScript("window.scrollBy(0,500)", "");
 
-				// Submit the form
-				// driver.findElement(By.cssSelector("#submit")).click();
-				WebElement submit = wait.until(ExpectedConditions.elementToBeClickable(By.id("submit")));
+			// Submit the form
+			// driver.findElement(By.cssSelector("#submit")).click();
+			WebElement submit = wait.until(ExpectedConditions.elementToBeClickable(By.id("submit")));
 
-				((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", submit);
-
-				submit.click();
+			((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", submit);
+			
+			// Use JavaScript click to avoid interception
+			((JavascriptExecutor) driver).executeScript("arguments[0].click();", submit);
 
 				// Wait for submission to process
 				driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(2));
@@ -155,8 +160,10 @@ public class bookLog extends BaseTest {
 			driver.findElement(By.xpath("(//div[contains(@class,'header-wrapper')])[1]")).click();
 			Thread.sleep(5000);
 			driver.findElement(By.xpath("(//li[@id='item-3'])[1]")).click();
+			Thread.sleep(2000);
 			JavascriptExecutor js = (JavascriptExecutor) driver;
 			js.executeScript("window.scrollBy(0,300)", "");
+			Thread.sleep(2000);
 			// WebElement table = driver.findElement(By.xpath("//div[@class='ReactTable
 			// -striped -highlight']"));
 			WebElement table = wait.until(
@@ -208,7 +215,12 @@ public class bookLog extends BaseTest {
 			Thread.sleep(5000);
 			JavascriptExecutor js = (JavascriptExecutor) driver;
 			js.executeScript("window.scrollBy(0,300)", "");
-			driver.findElement(By.xpath("(//li[@id='item-0'])[5]")).click();
+			
+			// Wait for element to be clickable before clicking
+			WebElement item = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//li[@id='item-0'])[5]")));
+			js.executeScript("arguments[0].scrollIntoView(true);", item);
+			js.executeScript("arguments[0].click();", item);
+			
 			js.executeScript("window.scrollBy(0,300)", "");
 			Thread.sleep(3000);
 
