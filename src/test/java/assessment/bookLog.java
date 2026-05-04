@@ -1,8 +1,5 @@
 package assessment;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
@@ -26,27 +23,17 @@ import org.testng.annotations.Test;
 import org.openqa.selenium.WebElement;
 import io.github.bonigarcia.wdm.WebDriverManager;
 
-public class bookLog extends ExtentReport {
-
-	private WebDriver driver;
-	private WebDriverWait wait;
+public class bookLog extends BaseTest {
 
 	String BASE_URL = "https://demoqa.com/books";
 	String SEARCH_TERM = "JavaScript";
 	String EXPECTED_BOOK_NAME = "Programming JavaScript Applications";
 	String EXPECTED_AUTHOR = "Eric Elliott";
 
-	@BeforeMethod
-	public void setUp() {
-	    DriverManager.setupDriver();
-	    driver = DriverManager.getDriver();   // IMPORTANT
-	    wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-	}
-
 	@Test(priority = 1)
 	public void bookSearch() {
 		test = extent.createTest("Test One", "Book Search using keyword");
-		//WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
+		// WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
 
 		try {
 
@@ -55,7 +42,7 @@ public class bookLog extends ExtentReport {
 			WebElement searchBox = wait
 					.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//input[@id='searchBox']")));
 
-			searchBox.sendKeys("Book");
+			searchBox.sendKeys(SEARCH_TERM);
 
 			// Validate the product name and author
 			WebElement bookNameElement = driver.findElement(By.id("see-book-Programming JavaScript Applications"));
@@ -84,7 +71,7 @@ public class bookLog extends ExtentReport {
 	@Test(priority = 2)
 	public void studentForm() throws IOException {
 		test = extent.createTest("Test Two", "Fill up the form for 5 studends");
-		//WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
+		// WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
 
 		try {
 			driver.get(BASE_URL);
@@ -158,7 +145,7 @@ public class bookLog extends ExtentReport {
 	@Test(priority = 3)
 	public void WebTableToExcel() throws InterruptedException, IOException {
 		test = extent.createTest("Test Three", "Write the webtable data to excel");
-		//WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
+		// WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
 
 		try {
 			// Navigate to the web page
@@ -210,7 +197,7 @@ public class bookLog extends ExtentReport {
 	@Test(priority = 4)
 	public void DragAndDropExample() throws InterruptedException {
 		test = extent.createTest("Test Four", "Sort the List");
-		//WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
+		// WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
 
 		try {
 			// Navigate to the web page
@@ -252,10 +239,4 @@ public class bookLog extends ExtentReport {
 
 	}
 
-	@AfterMethod
-	public void tearDown() {
-	    if (DriverManager.getDriver() != null) {
-	        DriverManager.quitDriver();
-	    }
-	}
 }
