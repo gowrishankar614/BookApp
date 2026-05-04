@@ -1,162 +1,95 @@
 package assessment;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.List;
 
-import org.apache.poi.sl.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
-import org.testng.Assert;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
 import org.openqa.selenium.WebElement;
-import io.github.bonigarcia.wdm.WebDriverManager;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
+/**
+ * Test class for DemoQA Books application
+ * Tests include: Book Search, Form Submission, Web Table Extraction, and Drag & Drop
+ */
 public class bookLog extends BaseTest {
 
-	String BASE_URL = "https://demoqa.com/books";
-	String SEARCH_TERM = "JavaScript";
-	String EXPECTED_BOOK_NAME = "Programming JavaScript Applications";
-	String EXPECTED_AUTHOR = "Eric Elliott";
+	private BooksPage booksPage;
+	private SeleniumUtils utils;
+
+	@Override
+	public void setUp() {
+		super.setUp();
+		utils = new SeleniumUtils(driver, wait);
+		booksPage = new BooksPage(driver, utils);
+	}
 
 	@Test(priority = 1)
 	public void bookSearch() {
 		test = extent.createTest("Test One", "Book Search using keyword");
-		// WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
 
 		try {
-
-			driver.get(BASE_URL);
-			Thread.sleep(3000); // Wait for page to load completely
+			booksPage.navigateToBooks();
+			utils.waitWithDelay(TestData.MEDIUM_WAIT);
 			
-			// Find and interact with search box
-			WebElement searchBox = wait
-					.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//input[@id='searchBox']")));
+			// Search for book
+			booksPage.searchBook(TestData.SEARCH_TERM);
 
-			searchBox.clear();
-			searchBox.sendKeys(SEARCH_TERM);
-			
-			// Wait longer for search results to load
-			Thread.sleep(4000);
-
-			// Validate the product name and author - search for book name first
-			WebElement bookNameElement = null;
-			try {
-				bookNameElement = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("see-book-Programming JavaScript Applications")));
-			} catch (Exception e) {
-				// If by ID fails, try finding it by link text or other means
-				bookNameElement = driver.findElement(By.linkText("Programming JavaScript Applications"));
-			}
-			
+			// Get book name and validate
+			WebElement bookNameElement = booksPage.getBookNameElement(TestData.EXPECTED_BOOK_NAME);
 			String bookName = bookNameElement.getText();
 			
 			// Scroll to find author element
-			JavascriptExecutor js = (JavascriptExecutor) driver;
-			js.executeScript("arguments[0].scrollIntoView(true);", bookNameElement);
-			Thread.sleep(2000);
+			utils.scrollIntoView(bookNameElement);
+			utils.waitWithDelay(TestData.SHORT_WAIT);
 			
-			// Try to find author with increased wait
-			WebElement authorElement = null;
-			try {
-				authorElement = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[contains(text(), 'Eric Elliott')]")));
-			} catch (Exception ex) {
-				// If author not found, just log it and continue
-				System.out.println("Author element not found, continuing with test");
-				test.warning("Author element not found in search results");
-			}
-			
-			String author = (authorElement != null) ? authorElement.getText() : EXPECTED_AUTHOR;
+			// Try to find author
+			WebElement authorElement = booksPage.getAuthorElement(TestData.EXPECTED_AUTHOR);
+			String author = (authorElement != null) ? authorElement.getText() : TestData.EXPECTED_AUTHOR;
 
-			// Assertions - only assert if element was found
-			Assert.assertEquals(EXPECTED_BOOK_NAME, bookName);
+			// Assertions
+			Assert.assertEquals(TestData.EXPECTED_BOOK_NAME, bookName);
 			if (authorElement != null) {
-				Assert.assertEquals(EXPECTED_AUTHOR, author);
+				Assert.assertEquals(TestData.EXPECTED_AUTHOR, author);
 			}
 
-			js.executeScript("window.scrollBy(0,250)", "");
-
-			WebElement bookLink = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[@id='see-book-Programming JavaScript Applications']")));
-			bookLink.click();
-			// Log result
+			// Click on book
+			booksPage.clickBook(TestData.EXPECTED_BOOK_NAME);
 			test.pass("Test One passed");
+			
 		} catch (Exception e) {
-			e.printStackTrace();
+			test.fail("Test failed: " + e.getMessage());
 			Assert.fail("Test failed: " + e.getMessage());
 		}
-
 	}
 
 	@Test(priority = 2)
 	public void studentForm() throws IOException {
-		test = extent.createTest("Test Two", "Fill up the form for 5 studends");
-		// WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
+		test = extent.createTest("Test Two", "Fill up the form for 5 students");
 
 		try {
-			driver.get(BASE_URL);
-			driver.findElement(By.xpath("(//div[contains(@class,'header-wrapper')])[2]")).click();
-			// driver.findElement(By.xpath("(//li[@id='item-0'])[2]")).click();
-			WebElement element = wait
-					.until(ExpectedConditions.elementToBeClickable(By.xpath("(//li[@id='item-0'])[2]")));
-
-			((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", element);
-
-			element.click();
+			driver.get(TestData.BASE_URL);
+			booksPage.navigateToForm();
 
 			// Initialize Excel utility
-			XLUtility excelUtils = new XLUtility("src/resources/data.xlsx");
+			XLUtility excelUtils = new XLUtility(TestData.EXCEL_DATA_PATH);
 
 			// Iterate through each row in the Excel sheet
-			for (int i = 1; i < excelUtils.getRowCount(); i++) { // Starting from 1 to skip header
-				String FName = excelUtils.getCellData(i, 0);
-				String LName = excelUtils.getCellData(i, 1);
-				String Gender = excelUtils.getCellData(i, 2);
+			for (int i = 1; i < excelUtils.getRowCount(); i++) {
+				String firstName = excelUtils.getCellData(i, 0);
+				String lastName = excelUtils.getCellData(i, 1);
+				String gender = excelUtils.getCellData(i, 2);
 				String phone = excelUtils.getCellData(i, 3);
 
 				// Fill out the form fields
-				driver.findElement(By.cssSelector("#firstName")).sendKeys(FName);
-				driver.findElement(By.cssSelector("#lastName")).sendKeys(LName);
-				driver.findElement(By.cssSelector("#userNumber")).sendKeys(phone);
+				booksPage.fillStudentForm(firstName, lastName, gender, phone);
 
-				// Select the radio button based on gender
-				if ("male".equalsIgnoreCase(Gender)) {
-					driver.findElement(By.cssSelector("label[for='gender-radio-1']")).click();
-				} else if ("female".equalsIgnoreCase(Gender)) {
-					driver.findElement(By.cssSelector("label[for='gender-radio-2']")).click();
-				} else if ("other".equalsIgnoreCase(Gender)) {
-					driver.findElement(By.cssSelector("label[for='gender-radio-3']")).click();
-				}
+				utils.scrollByPixels(TestData.SCROLL_500);
 
-				JavascriptExecutor js = (JavascriptExecutor) driver;
-				js.executeScript("window.scrollBy(0,500)", "");
-
-			// Submit the form
-			// driver.findElement(By.cssSelector("#submit")).click();
-			WebElement submit = wait.until(ExpectedConditions.elementToBeClickable(By.id("submit")));
-
-			((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", submit);
-			
-			// Use JavaScript click to avoid interception
-			((JavascriptExecutor) driver).executeScript("arguments[0].click();", submit);
-
-				// Wait for submission to process
-				driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(2));
+				// Submit the form
+				booksPage.submitForm();
 
 				// Close the confirmation window
-				// driver.findElement(By.cssSelector("#closeLargeModal")).click();
-				WebElement closeButton = driver.findElement(By.id("closeLargeModal"));
-				((JavascriptExecutor) driver).executeScript("arguments[0].click();", closeButton);
-
+				booksPage.closeFormModal();
 			}
 
 			// Close the Excel utility
@@ -165,9 +98,9 @@ public class bookLog extends BaseTest {
 			test.pass("Test Two passed");
 		} catch (IOException e) {
 			test.fail("IO Exception occurred: " + e.getMessage());
-			Assert.fail("Test Three failed due to IO Exception");
+			Assert.fail("Test Two failed due to IO Exception");
 		} catch (Exception e) {
-			e.printStackTrace();
+			test.fail("Test failed: " + e.getMessage());
 			Assert.fail("Test failed: " + e.getMessage());
 		}
 	}
@@ -175,46 +108,20 @@ public class bookLog extends BaseTest {
 	@Test(priority = 3)
 	public void WebTableToExcel() throws InterruptedException, IOException {
 		test = extent.createTest("Test Three", "Write the webtable data to excel");
-		// WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
 
 		try {
 			// Navigate to the web page
-			driver.get(BASE_URL);
+			driver.get(TestData.BASE_URL);
+			booksPage.navigateToWebTable();
 
-			// Locate the table
-			driver.findElement(By.xpath("(//div[contains(@class,'header-wrapper')])[1]")).click();
-			Thread.sleep(5000);
-			driver.findElement(By.xpath("(//li[@id='item-3'])[1]")).click();
-			Thread.sleep(2000);
-			JavascriptExecutor js = (JavascriptExecutor) driver;
-			js.executeScript("window.scrollBy(0,300)", "");
-			Thread.sleep(2000);
-			// WebElement table = driver.findElement(By.xpath("//div[@class='ReactTable
-			// -striped -highlight']"));
-			WebElement table = wait.until(
-					ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[contains(@class,'ReactTable')]")));
-
-			// Prepare data to write to Excel
-			int rowCount = 0;
-			String[][] data = new String[table.findElements(By.className("rt-tr")).size()][];
-
-			for (WebElement row : table.findElements(By.className("rt-tr"))) {
-				String[] rowData = new String[row.findElements(By.className("rt-td")).size()];
-				int colCount = 0;
-
-				for (WebElement cell : row.findElements(By.className("rt-td"))) {
-					rowData[colCount++] = cell.getText();
-				}
-				data[rowCount++] = rowData;
-			}
+			// Extract table data
+			String[][] data = booksPage.extractTableData();
 
 			// Use ExcelUtil to write data
-			String excelPath = "src/resources/data.xlsx";
-			XLUtility excelUtil = new XLUtility(excelPath);
-			excelUtil.writeDataToNewSheet("WebTable", data);
+			XLUtility excelUtil = new XLUtility(TestData.EXCEL_DATA_PATH);
+			excelUtil.writeDataToNewSheet(TestData.WEBTABLE_SHEET_NAME, data);
 			excelUtil.close();
 
-			// System.out.println("Data written to Excel successfully");
 			test.pass("Test Three passed");
 		} catch (IOException e) {
 			test.fail("IO Exception occurred: " + e.getMessage());
@@ -223,57 +130,28 @@ public class bookLog extends BaseTest {
 			e.printStackTrace();
 			Assert.fail("Test failed: " + e.getMessage());
 		}
-
 	}
 
 	@Test(priority = 4)
 	public void DragAndDropExample() throws InterruptedException {
 		test = extent.createTest("Test Four", "Sort the List");
-		// WebDriver driver = DriverManager.getDriver(); // Get the WebDriver instance
 
 		try {
 			// Navigate to the web page
-			driver.get(BASE_URL);
+			driver.get(TestData.BASE_URL);
+			booksPage.navigateToDragAndDrop();
 
-			// Locate the table
-			driver.findElement(By.xpath("(//div[contains(@class,'header-wrapper')])[5]")).click();
-			Thread.sleep(5000);
-			JavascriptExecutor js = (JavascriptExecutor) driver;
-			js.executeScript("window.scrollBy(0,300)", "");
-			
-			// Wait for element to be clickable before clicking
-			WebElement item = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//li[@id='item-0'])[5]")));
-			js.executeScript("arguments[0].scrollIntoView(true);", item);
-			js.executeScript("arguments[0].click();", item);
-			
-			js.executeScript("window.scrollBy(0,300)", "");
-			Thread.sleep(3000);
+			// Get draggable items
+			List<WebElement> numbers = booksPage.getDraggableItems();
 
-			// Find the list of elements
-			// List<WebElement> numbers =
-			// driver.findElements(By.cssSelector(".vertical-list-container
-			// .list-group-item"));
-			List<WebElement> numbers = wait.until(ExpectedConditions
-					.visibilityOfAllElementsLocatedBy(By.cssSelector(".vertical-list-container .list-group-item")));
-			// System.out.println("The length is " + numbers.size());
-
-			// Initialize the Actions class
-			Actions actions = new Actions(driver);
-			WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-
-			// Drag and drop in the reverse order
-			actions.dragAndDrop(numbers.get(5), numbers.get(0)).perform(); // Six to One
-			actions.dragAndDrop(numbers.get(5), numbers.get(1)).perform(); // Five to Two
-			actions.dragAndDrop(numbers.get(5), numbers.get(2)).perform(); // Four to Three
-			actions.dragAndDrop(numbers.get(5), numbers.get(3)).perform(); // Three to Two
-			actions.dragAndDrop(numbers.get(5), numbers.get(4)).perform(); // Two to One
+			// Perform drag and drop operations
+			booksPage.sortListByDragDrop(numbers);
 
 			test.pass("Test Four passed");
 		} catch (Exception e) {
 			e.printStackTrace();
+			test.fail("Test failed: " + e.getMessage());
 			Assert.fail("Test failed: " + e.getMessage());
 		}
-
 	}
-
 }

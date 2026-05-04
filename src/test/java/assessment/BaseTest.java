@@ -7,6 +7,9 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 
+/**
+ * Base test class that provides common setUp and tearDown for all test classes
+ */
 public class BaseTest extends ExtentReport {	
 
     protected WebDriver driver;
